@@ -92,9 +92,11 @@ def device_to_stream(device):
                     .append_child_value("unit", u) \
                     .append_child_value("type", t)   
     
+
     stream = pylsl.StreamOutlet(info,
                                 chunk_size=0,
                                 max_buffered=1)
+    print('Creating', info.as_xml())
     return stream
 # %%
 class Outlet(threading.Thread):
@@ -130,7 +132,7 @@ class Outlet(threading.Thread):
                     chunk.append(s.value)
                     s.clear() #to prevent memory issues due to unnecessary appending of sensor data
                 stream.push_sample(chunk)
-                print(chunk)
+                #print(chunk)
         device.close()
 # %%
 if __name__ == '__main__':    
@@ -144,21 +146,32 @@ if __name__ == '__main__':
                         help='which devices to select')
     parser.add_argument('--order_code',
                         help='which devices to select')
+    parser.add_argument('--number', type=int, default=1,
+                        help='How many should be found. Aborts otherwise')
     args = parser.parse_args() 
-    if args.scan:
-        print('Available devices')
-        print('-----------------')
-        for dev in resolve_all():
-            print(dev['order_code'], dev['serial_number'])
-        quit()
-    devices = resolve_devices(order_code=args.order_code,
-                              serial_number=args.serial_number)
-    
     enable = args.enable.replace('[','').replace(']','').split(',')
-    for device in devices:
-        o = Outlet(device=device, enable=enable)
-        o.start()
-        
+    # 
+    try:
+        if args.scan:
+            print('Available devices')
+            print('-----------------')
+            for dev in resolve_all():
+                print(dev['order_code'], dev['serial_number'])
+            quit()
+            
+        devices = resolve_devices(order_code=args.order_code,
+                                  serial_number=args.serial_number)
+        if len(devices) != args.number:
+            input(f'Found {len(devices)}, but {args.number} were requested')
+            quit()
+        for device in devices:
+            o = Outlet(device=device, enable=enable)
+            o.start()
+    except OSError:
+        input(f'Connection problem, please replug the USB')
+        quit()
+    except Exception as e:
+        raise e
     
 
 # %%

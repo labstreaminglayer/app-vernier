@@ -11,7 +11,7 @@ setup(
     url='https://github.com/translationalneurosurgery/app-vernier.git',
     download_url='https://github.com/translationalneurosurgery/app-vernier.git',
     license='MIT',
-    packages=['vernier'],
+    packages=['verniersl'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',
