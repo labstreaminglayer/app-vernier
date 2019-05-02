@@ -8,6 +8,7 @@ Created on Fri Mar  1 12:18:57 2019
 from godirect import GoDirect
 import pylsl
 import threading
+import time
 # %%
 #import logging
 #logging.basicConfig()
@@ -59,7 +60,7 @@ def get_available_sensors(device):
     return {s.sensor_description:k for k,s in sensors.items()}
 # %%
 def device_to_stream(device):
-    fs = 1000/device.sample_period_in_milliseconds        
+    fs = 0# 1000/device.sample_period_in_milliseconds        
     sn = device.serial_number
     oc = device.order_code
 
@@ -72,7 +73,7 @@ def device_to_stream(device):
         units.append(sensor.sensor_units)
         types.append('vernier')
         
-    info = pylsl.StreamInfo(name=device.name.strip(),
+    info = pylsl.StreamInfo(name=device.name.strip().replace(' ','_'),
                             type=oc,
                             channel_count=len(names),                              
                             nominal_srate=fs, 
@@ -125,14 +126,22 @@ class Outlet(threading.Thread):
         print(' are enabled. Starting to stream now')
         stream = device_to_stream(device)        
         device.start()
+        old = 0
+        cnt = 0.
         while self.is_running: # publish 
+            time.sleep(0.01)            
             if device.read():  
                 chunk = []
                 for s in sensors :
                     chunk.append(s.value)
                     s.clear() #to prevent memory issues due to unnecessary appending of sensor data
-                stream.push_sample(chunk)
-                #print(chunk)
+                    old = chunk
+                    cnt += 1
+                    print(cnt, chunk, pylsl.local_clock())
+                    stream.push_sample(chunk)
+            else:
+                stream.push_sample(old)
+                
         device.close()
 # %%
 if __name__ == '__main__':    
