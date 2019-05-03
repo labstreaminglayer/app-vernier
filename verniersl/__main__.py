@@ -158,42 +158,59 @@ class Outlet(threading.Thread):
                 
         device.stop()
         device.close()
+        
+def scan():
+    print('Available devices. Default sensors are marked by *.')                  
+    for dev in resolve_all():
+        print('---------------------------------------------------')
+        print(dev['order_code'], dev['serial_number'])
+        device = dev['device']
+        sensors = get_available_sensors(device)
+        default = get_default_sensors(device)
+        for s in sensors.keys():
+            info = '*' if s in default else ' '
+            print(info, s, info)
+            
 # %%
 if __name__ == '__main__':    
+    def do_quit():
+        godirect.quit()
+        quit()
+        
+    
     import argparse
     parser = argparse.ArgumentParser(description='Stream Vernier Go-Direct with LSL')
     parser.add_argument('--scan', action='store_true',
-                        help='which channels do enable')
+                        help='report the available devices')
     parser.add_argument('--enable', default='[default]',
                         help='which channels do enable: List')
     parser.add_argument('--serial_number',
-                        help='which devices to select')
-    parser.add_argument('--order_code',
-                        help='which devices to select')
+                        help='''The serial number (eg. OK2001B3) of the 
+                        desired device. Streams are then limited to a single device''')
+    parser.add_argument('--order_code', 
+                        help='''The order code (eg. GDX-ACC for an accelerometer)
+                        of the desired device. Can find and stream more than 
+                        one device''')
     parser.add_argument('--number', type=int, default=1,
-                        help='How many should be found. Aborts otherwise')
+                        help='''How many devices are expected, aborts otherwise. 
+                        Helpful as sometimes, one connection might be lost, 
+                        and we would start streaming then anyways.''')
     args = parser.parse_args() 
     enable = args.enable.replace('[','').replace(']','').split(',')
     # 
     try:
         if args.scan:
-            print('Available devices. Default sensors are marked by *.')                  
-            for dev in resolve_all():
-                print('---------------------------------------------------')
-                print(dev['order_code'], dev['serial_number'])
-                device = dev['device']
-                sensors = get_available_sensors(device)
-                default = get_default_sensors(device)
-                for s in sensors.keys():
-                    info = '*' if s in default else ' '
-                    print(info, s, info)
-                                
+            scan()     
         else:     #stream those devices fitting the arguments
             devices = resolve_devices(order_code=args.order_code,
                                       serial_number=args.serial_number)
+            if not devices:                                
+                parser.print_help()
+                print(f'No devices were found to stream')
+                do_quit()
             if len(devices) != args.number:
                 input(f'Found {len(devices)}, but {args.number} were requested')
-                quit()
+                do_quit
             for device in devices:
                 o = Outlet(device=device, enable=enable)
                 o.start()
@@ -201,7 +218,9 @@ if __name__ == '__main__':
         input(f'Connection problem, please replug the USB')        
     except Exception as e:
         raise e
+    except ConnectionError:
+        parser.print_help()
     finally:
-        godirect.quit()
+        do_quit
 
 # %%
