@@ -74,7 +74,7 @@ def device_to_stream(device):
         types.append('vernier')
         
     info = pylsl.StreamInfo(name=device.name.strip().replace(' ','_'),
-                            type=oc,
+                            type=oc.split('GDX-')[1].upper(),
                             channel_count=len(names),                              
                             nominal_srate=fs, 
                             channel_format='float32',
@@ -114,33 +114,40 @@ class Outlet(threading.Thread):
         device.open() #get_availbel        
         # enable channels        
         for e in self.enable:
+            e = e.strip()
             if e == 'default':
                 device.enable_default_sensors()
             try:
                 device.enable_sensors([available_sensors[e]])
             except KeyError:
-                pass
+                print(f'Could not find {e} to enable')
             print(f'Enabling {e}')
         sensors = device.get_enabled_sensors()
         print([s.sensor_description for s in sensors], end='')
         print(' are enabled. Starting to stream now')
         stream = device_to_stream(device)        
         device.start()
-        old = 0
-        cnt = 0.
-        while self.is_running: # publish 
-            time.sleep(0.01)            
+        t0 = None
+        def print_log(t0, dt=[], cnt=[0]):
+            t1 = pylsl.local_clock()
+            if t0 is not None:
+                cnt[0] += 1
+                dt.append(t1-t0)  
+                if len(dt)>100:
+                    dt = dt[-100:]
+                Fs = len(dt)/sum(dt)
+                print(f'#{int(cnt[0]):5} with {chunk} at {t1:4.2f} approx Fs = {Fs:4.2f}')
+            return t1
+
+        while self.is_running: # publish             
+            time.sleep(0.001)              
             if device.read():  
                 chunk = []
-                for s in sensors :
-                    chunk.append(s.value)
-                    s.clear() #to prevent memory issues due to unnecessary appending of sensor data
-                    old = chunk
-                    cnt += 1
-                    print(cnt, chunk, pylsl.local_clock())
-                    stream.push_sample(chunk)
-            else:
-                stream.push_sample(old)
+                for six, sens in enumerate(sensors):
+                    chunk.append(sens.value)
+                    sens.clear() #to prevent memory issues due to unnecessary appending of sensor data
+                t0 = print_log(t0)
+                stream.push_sample(chunk)
                 
         device.close()
 # %%
