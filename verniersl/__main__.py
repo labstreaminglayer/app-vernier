@@ -49,6 +49,13 @@ def resolve_devices(**kwargs):
     else:
         return None
 
+def get_default_sensors(device):
+    device.open()
+    device.enable_default_sensors()
+    sensors = get_enabled_sensors(device)
+    device.close()
+    return sensors
+ 
 def get_enabled_sensors(device):
     sensors = device.get_enabled_sensors()
     return [s.sensor_description for s in sensors]
@@ -144,17 +151,18 @@ class Outlet(threading.Thread):
             if device.read():  
                 chunk = []
                 for six, sens in enumerate(sensors):
-                    chunk.append(sens.value)
+                    chunk.append(sens.value) #TODO upgrade to sens.values
                     sens.clear() #to prevent memory issues due to unnecessary appending of sensor data
                 t0 = print_log(t0)
                 stream.push_sample(chunk)
                 
+        device.stop()
         device.close()
 # %%
 if __name__ == '__main__':    
     import argparse
     parser = argparse.ArgumentParser(description='Stream Vernier Go-Direct with LSL')
-    parser.add_argument('--scan', action='store_true', default=False,
+    parser.add_argument('--scan', action='store_true',
                         help='which channels do enable')
     parser.add_argument('--enable', default='[default]',
                         help='which channels do enable: List')
@@ -169,25 +177,31 @@ if __name__ == '__main__':
     # 
     try:
         if args.scan:
-            print('Available devices')
-            print('-----------------')
+            print('Available devices. Default sensors are marked by *.')                  
             for dev in resolve_all():
+                print('---------------------------------------------------')
                 print(dev['order_code'], dev['serial_number'])
-            quit()
-            
-        devices = resolve_devices(order_code=args.order_code,
-                                  serial_number=args.serial_number)
-        if len(devices) != args.number:
-            input(f'Found {len(devices)}, but {args.number} were requested')
-            quit()
-        for device in devices:
-            o = Outlet(device=device, enable=enable)
-            o.start()
+                device = dev['device']
+                sensors = get_available_sensors(device)
+                default = get_default_sensors(device)
+                for s in sensors.keys():
+                    info = '*' if s in default else ' '
+                    print(info, s, info)
+                                
+        else:     #stream those devices fitting the arguments
+            devices = resolve_devices(order_code=args.order_code,
+                                      serial_number=args.serial_number)
+            if len(devices) != args.number:
+                input(f'Found {len(devices)}, but {args.number} were requested')
+                quit()
+            for device in devices:
+                o = Outlet(device=device, enable=enable)
+                o.start()
     except OSError:
-        input(f'Connection problem, please replug the USB')
-        quit()
+        input(f'Connection problem, please replug the USB')        
     except Exception as e:
         raise e
-    
+    finally:
+        godirect.quit()
 
 # %%
