@@ -14,8 +14,7 @@ cd app-vernier
 pip install -e .
 pip install -r requirements.txt
 ```
-The app wraps  ```pylsl```, and ```godirect``` from Vernier, the latter wraps 
-On linux, compilation of the wheels requires libusb and libudev
+The app wraps ```pylsl``` and ```godirect``` from Vernier (https://github.com/VernierST/godirect-py). The latter wraps hidapi for USB and vernierpygatt for BLE. On linux, compilation of the wheels for hidapi required libusb and libudev.
 
 ## Usage
 
