@@ -9,7 +9,7 @@ The app is written in python 3.
 
 The preferred way is to clone it and install it via pip, e.g by 
 ```
-git clone https://github.com/translationalneurosurgery/app-vernier.git
+git clone https://github.com/labstreaminglayer/app-vernier
 cd app-vernier
 pip install -e .
 pip install -r requirements.txt
@@ -19,9 +19,9 @@ The app wraps ```pylsl``` and ```godirect``` from Vernier (https://github.com/Ve
 ## Usage
 
 ```
-usage: __main__.py [-h] [--scan] [--enable ENABLE]
-                   [--serial_number SERIAL_NUMBER] [--order_code ORDER_CODE]
-                   [--number NUMBER]
+python -m verniersl [-h] [--scan] [--enable ENABLE]
+                    [--serial_number SERIAL_NUMBER] [--order_code ORDER_CODE]
+                    [--number NUMBER]
 
 Stream Vernier Go-Direct with LSL
 
