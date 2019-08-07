@@ -224,10 +224,11 @@ def main():
     parser.add_argument('--number', type=int, default=1,
                         help='''How many devices are expected, aborts otherwise. 
                         Helpful as sometimes, one connection might be lost, 
-                        and we would start streaming then anyways.''')
-    parser.add_argument('--mode', type=str, default="any",
+                        and we would start streaming then anyways. Defaults to 1''')
+    parser.add_argument('--mode', type=str, default="usb",
                         help='''Whether the devices are to be searched 
-                        and connected over "usb", "ble" or "any".''')
+                        and connected over "usb", "ble" or "any". Defaults to 
+                        "usb"''')
     args = parser.parse_args() 
     enable = args.enable.replace('[','').replace(']','').split(',')
     # 
