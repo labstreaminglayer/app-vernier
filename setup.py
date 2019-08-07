@@ -3,7 +3,7 @@ from distutils.core import setup
 
 setup(
     name='vernier-lsl',
-    version='0.0.1',
+    version='0.0.2',
     description='Toolbox to receive godirect data and send as LSL streams.',
     long_description='A Python Toolbox to receive from GoDirect and send as  labstreaminglayer streams',
     author='Robert Guggenberger',
@@ -12,6 +12,8 @@ setup(
     download_url='https://github.com/translationalneurosurgery/app-vernier.git',
     license='MIT',
     packages=['verniersl'],
+    entry_points = {'console_scripts': ['verniersl=verniersl.__main__:main'],
+                   },
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',

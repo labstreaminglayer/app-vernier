@@ -9,30 +9,50 @@ from godirect import GoDirect
 import pylsl
 import threading
 import time
+from pygatt.exceptions import NotConnectedError
 # %%
 #import logging
 #logging.basicConfig()
 #logging.getLogger('godirect').setLevel(logging.DEBUG)
 #logging.getLogger('pygatt').setLevel(logging.DEBUG)
 # %%
-godirect = GoDirect()
+
+def close_device(device):
+    if device.type == "USB":
+        try: 
+            device.close() 
+        except NotConnectedError:
+           print("could not connect with", device)   
+           
+def open_device(device):
+    if device.type == "USB":
+        try: 
+            device.open() 
+        except NotConnectedError:
+           print("could not connect with", device)           
+
 
 def resolve_all():
-    devices = godirect.list_devices()            
     available = []
+    for idx, info in enumerate(iterate_available()):
+        available.append(info)
+    return available
+
+
+def iterate_available():
+    devices = godirect.list_devices()                
     for idx, d in enumerate(devices):
-        d.open()
+        open_device(d)
         info = {}
         info['order_code'] = d.order_code
         info['serial_number'] = d.serial_number        
-        info['device'] = d
-        available.append(info)
-        d.close()
-    return available
+        info['device'] = d           
+        close_device(d)
+        yield info
 
 def resolve_devices(**kwargs):   
     print('Searching for device: ',kwargs)
-    available = resolve_all()
+    available = iterate_available()
     fitting = []
     for info in available:
         fits = []
@@ -48,7 +68,7 @@ def resolve_devices(**kwargs):
         return fitting
     else:
         return None
-
+    
 def get_default_sensors(device):
     device.open()
     device.enable_default_sensors()
@@ -161,7 +181,7 @@ class Outlet(threading.Thread):
         
 def scan():
     print('Available devices. Default sensors are marked by *.')                  
-    for dev in resolve_all():
+    for dev in iterate_available():
         print('---------------------------------------------------')
         print(dev['order_code'], dev['serial_number'])
         device = dev['device']
@@ -172,7 +192,17 @@ def scan():
             print(info, s, info)
             
 # %%
-if __name__ == '__main__':    
+def start_godirect(mode:str):    
+    global godirect
+    if mode == "any":
+        godirect = GoDirect()
+    elif mode == "usb":
+        godirect = GoDirect(use_ble=False)
+    elif mode == "ble":
+        godirect = GoDirect(use_usb=False)
+        
+    
+def main():
     def do_quit():
         godirect.quit()
         quit()
@@ -195,9 +225,14 @@ if __name__ == '__main__':
                         help='''How many devices are expected, aborts otherwise. 
                         Helpful as sometimes, one connection might be lost, 
                         and we would start streaming then anyways.''')
+    parser.add_argument('--mode', type=str, default="any",
+                        help='''Whether the devices are to be searched 
+                        and connected over "usb", "ble" or "any".''')
     args = parser.parse_args() 
     enable = args.enable.replace('[','').replace(']','').split(',')
     # 
+    start_godirect(args.mode.lower())
+    
     try:
         if args.scan:
             scan()     
@@ -221,6 +256,9 @@ if __name__ == '__main__':
     except ConnectionError:
         parser.print_help()
     finally:
-        do_quit
+        do_quit()
+# %%        
+if __name__ == '__main__':    
+    main()
 
-# %%
+
