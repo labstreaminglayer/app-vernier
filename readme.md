@@ -74,5 +74,6 @@ python -m verniersl --enable Force --order_code GDX-HD --number 2
 
 The toolbox was developed and tested on the USB interface for the GDX-HD Hand Dynamometer, the GDX-ACC accelerometer, and the GDX-RB Respiration Belt. Vernier has a large variety of sensor devices (https://www.vernier.com/products/sensors/go-direct-sensors/). Some have quirks, e.g. for the GDX-ACC the sensors channel indices were set up wrong. So, pop a note if another device works (or doesn't)!
 
-I also implemented BLE support, but this requires a Bluegiga BLED112 Bluetooth® Low Energy Dongle, see also: https://github.com/VernierST/godirect-py/issues/5
+# Bluetooth
+I have also implemented BLE support, but this requires a Bluegiga BLED112 Bluetooth® Low Energy Dongle, see also: https://github.com/VernierST/godirect-py/issues/5 Please note that in the meantime, starting with godirect-py v1.0.5, godirect has implememted the bleak backend. I have not tested this.
 
