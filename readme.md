@@ -8,7 +8,7 @@ The app is written in python 3.
 
 
 ```
-pip install verniersl
+pip install vernier-lsl
 ```
 
 You can install the development version with

@@ -9,7 +9,7 @@ with (Path(__file__).parent / "requirements.txt").open() as f:
 
 setup(
     name="vernier-lsl",
-    version="0.2",
+    version="0.2.1",
     description="Toolbox to receive godirect data and send as LSL streams.",
     long_description=long_description,
     long_description_content_type="text/markdown",

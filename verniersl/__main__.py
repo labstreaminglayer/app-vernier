@@ -203,6 +203,8 @@ def scan():
 # %%
 def start_godirect(mode: str):
     global godirect
+    print(f"Starting godirect in {mode} mode")
+
     if mode == "any":
         godirect = GoDirect()
     elif mode == "usb":
