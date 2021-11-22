@@ -1,13 +1,17 @@
 ## Verniersl
 
-This is a command-line-interface to collect data from a Godirect device and stream it via labstreaming layer. 
+This is a command-line-interface to collect data from a Godirect device and stream it via labstreaming layer.
 
 The app is written in python 3.
 
 # Installation
 
 
-The preferred way is to clone it and install it via pip, e.g by 
+```
+pip install verniersl
+```
+
+You can install the development version with
 ```
 git clone https://github.com/labstreaminglayer/app-vernier
 cd app-vernier
@@ -19,7 +23,7 @@ The app wraps ```pylsl``` and ```godirect``` from Vernier (https://github.com/Ve
 ## Usage
 
 ```
-usage: verniersl [-h] [--scan] [--enable ENABLE]
+usage: vernier-lsl [-h] [--scan] [--enable ENABLE]
                  [--serial_number SERIAL_NUMBER] [--order_code ORDER_CODE]
                  [--number NUMBER] [--mode MODE]
 
@@ -49,25 +53,25 @@ optional arguments:
 The terminology of Go Direct device can be confusing, as the device itself can be called a sensor, while each device has a set of individual sensors which can be turned on or off. Some of them are turned on by default. Check which devices are available, and show their available sensors, and which of there are enabled by default:
 
 ```
-python -m verniersl --scan
+vernier-lsl --scan
 ```
 
 Find a Go Direct (C) Acceleration Sensor, enable the default sensors and stream it
 
 ```
-python -m verniersl --order_code GDX-ACC
+vernier-lsl --order_code GDX-ACC
 ```
 
 Find a specific Go Direct (C) Acceleration Sensor, enable the x,y, andz axis acceleration sensors and stream it
 
 ```
-python -m verniersl --enable "[X-axis acceleration, Y-axis acceleration, Z-axis acceleration]" --order_code GDX-ACC --serial_number 0H101754
+vernier-lsl --enable "[X-axis acceleration, Y-axis acceleration, Z-axis acceleration]" --order_code GDX-ACC --serial_number 0H101754
 ```
 
 Find exactly two Hand Dynamometers, enable force sensors and stream them.
 
 ```
-python -m verniersl --enable Force --order_code GDX-HD --number 2
+vernier-lsl --enable Force --order_code GDX-HD --number 2
 ```
 
 # Supported devices
@@ -76,4 +80,3 @@ The toolbox was developed and tested on the USB interface for the GDX-HD Hand Dy
 
 # Bluetooth
 I have also implemented BLE support, but this requires a Bluegiga BLED112 Bluetooth® Low Energy Dongle, see also: https://github.com/VernierST/godirect-py/issues/5 Please note that in the meantime, starting with godirect-py v1.0.5, godirect has implememted the bleak backend. I have not tested this.
-

@@ -1,2 +1,3 @@
-godirect[usb,ble]
+#godirect[usb,ble]==1.1.2
+godirect
 pylsl

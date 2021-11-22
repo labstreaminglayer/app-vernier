@@ -46,7 +46,7 @@ def iterate_available():
 
 
 def resolve_devices(**kwargs):
-    print("Searching for device: ", kwargs)
+    print("Searching for device matching: ", kwargs)
     available = iterate_available()
     fitting = []
     for info in available:
@@ -197,6 +197,7 @@ def scan():
             print(info, s, info)
     if counter == 0:
         print(f"Found no devices.")
+    return counter
 
 
 # %%
@@ -217,7 +218,9 @@ def main():
 
     import argparse
 
-    parser = argparse.ArgumentParser(description="Stream Vernier Go-Direct with LSL")
+    parser = argparse.ArgumentParser(
+        description="Stream Vernier Go-Direct with LSL"
+    )
     parser.add_argument(
         "--scan", action="store_true", help="report the available devices"
     )
@@ -260,6 +263,7 @@ def main():
         if args.scan:
             scan()
         else:  # stream those devices fitting the arguments
+            scan()
             devices = resolve_devices(
                 order_code=args.order_code, serial_number=args.serial_number
             )
@@ -267,7 +271,9 @@ def main():
                 parser.print_help()
                 print(f"No devices were found to stream")
             elif len(devices) != args.number:
-                input(f"Found {len(devices)}, but {args.number} were requested")
+                input(
+                    f"Found {len(devices)}, but {args.number} were requested"
+                )
             else:
                 for device in devices:
                     o = Outlet(device=device, enable=enable)
